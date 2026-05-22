@@ -1,6 +1,17 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-const API_BASE = "__PORT_5000__".startsWith("__") ? "" : "__PORT_5000__";
+// Backend URL strategy:
+// 1. VITE_API_URL injected at build time wins (used for OVH static frontend pointing at Fly.io)
+// 2. Else, legacy sandbox placeholder __PORT_5000__
+// 3. Else, same-origin (dev + monolithic deployments)
+const RAW_VITE = import.meta.env.VITE_API_URL ?? "";
+const RAW_LEGACY = "__PORT_5000__";
+const API_BASE =
+  RAW_VITE && !RAW_VITE.startsWith("__")
+    ? RAW_VITE
+    : RAW_LEGACY.startsWith("__")
+      ? ""
+      : RAW_LEGACY;
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {

@@ -1,0 +1,63 @@
+name: Build & deploy frontend to OVH
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/client/**'
+      - 'app/package.json'
+      - 'app/package-lock.json'
+      - 'app/vite.config.ts'
+      - 'app/tailwind.config.ts'
+      - 'app/postcss.config.js'
+      - '.github/workflows/deploy-frontend-ovh.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build static frontend & sync to OVH
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: app
+        env:
+          # URL du backend Fly.io — pointée par toutes les requêtes API
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://trouve-praticien-api.fly.dev' }}
+        run: npm run build
+
+      - name: Vérifier que dist/public existe et n'est pas vide
+        run: |
+          if [ ! -d app/dist/public ] || [ -z "$(ls -A app/dist/public)" ]; then
+            echo "❌ app/dist/public introuvable ou vide"
+            exit 1
+          fi
+          ls -la app/dist/public/
+
+      - name: Déploiement FTP vers OVH
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.OVH_FTP_HOST }}
+          username: ${{ secrets.OVH_FTP_USER }}
+          password: ${{ secrets.OVH_FTP_PASSWORD }}
+          local-dir: ./app/dist/public/
+          server-dir: ${{ vars.OVH_REMOTE_DIR || '/www/trouve-praticien/' }}
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**

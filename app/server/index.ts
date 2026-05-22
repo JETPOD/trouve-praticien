@@ -24,6 +24,30 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+// CORS: utile quand le frontend statique est servi depuis un autre domaine
+// (ex: frontend sur OVH — trouve-praticien.nutricellscience.com,
+// backend sur Fly.io). En développement / monolithe, c'est sans effet utile.
+// Configurable via ALLOWED_ORIGINS = "https://a.com,https://b.com".
+const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && (allowedOrigins.length === 0 || allowedOrigins.includes(origin))) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Max-Age", "600");
+  }
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",

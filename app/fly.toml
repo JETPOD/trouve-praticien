@@ -1,0 +1,44 @@
+# Fly.io — configuration du backend "Trouve ton praticien"
+# Doc: https://fly.io/docs/reference/configuration/
+
+app = "trouve-praticien-api"
+primary_region = "cdg"  # Paris — proximité utilisateurs France
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+  DATA_DIR = "/data"
+  # Domaines autorisés à appeler l'API (CORS)
+  # Ajuste si tu utilises un autre sous-domaine côté OVH
+  ALLOWED_ORIGINS = "https://trouve-praticien.nutricellscience.com,https://www.trouve-praticien.nutricellscience.com"
+
+[[mounts]]
+  source = "trouve_praticien_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"   # économise les ressources : machine s'arrête après inactivité
+  auto_start_machines = true    # redémarre automatiquement au premier appel
+  min_machines_running = 0
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 250
+    soft_limit = 200
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "30s"
+    method = "GET"
+    path = "/api/stats"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"   # SQLite 335 MB + cache better-sqlite3
