@@ -14,6 +14,10 @@ on:
     # Rebuild mensuel le 1er à 03:00 UTC (rafraîchit les données depuis les CSV LFS)
     - cron: '0 3 1 * *'
 
+permissions:
+  contents: write  # nécessaire pour créer des releases
+
+
 jobs:
   build:
     name: Reconstruire data.db et publier l'artefact
