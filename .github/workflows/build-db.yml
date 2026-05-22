@@ -1,0 +1,89 @@
+name: Build SQLite database
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/scripts/**'
+      - 'app/shared/schema.ts'
+      - 'data/**'
+      - 'scripts/build-db.sh'
+      - '.github/workflows/build-db.yml'
+  workflow_dispatch:
+  schedule:
+    # Rebuild mensuel le 1er à 03:00 UTC (rafraîchit les données depuis les CSV LFS)
+    - cron: '0 3 1 * *'
+
+jobs:
+  build:
+    name: Reconstruire data.db et publier l'artefact
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout (avec LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      - name: Installer les dépendances
+        working-directory: app
+        run: npm ci
+
+      - name: Build de la base SQLite
+        run: bash scripts/build-db.sh
+
+      - name: Smoke test (compteurs)
+        working-directory: app
+        run: |
+          node -e "
+            const Database = require('better-sqlite3');
+            const db = new Database('./data.db', { readonly: true });
+            const total = db.prepare('SELECT COUNT(*) AS c FROM praticiens').get().c;
+            const hr = db.prepare('SELECT COUNT(*) AS c FROM praticiens WHERE score_hors_radar >= 50').get().c;
+            const us = db.prepare('SELECT COUNT(*) AS c FROM praticiens WHERE under_supplied = 1').get().c;
+            console.log('Total praticiens   :', total);
+            console.log('Score hors-radar ≥50:', hr);
+            console.log('Zone sous-dotée    :', us);
+            if (total < 400000) {
+              console.error('❌ Compteur trop bas, abandon');
+              process.exit(1);
+            }
+            console.log('✅ Base valide');
+          "
+
+      - name: Compresser l'artefact
+        run: |
+          cd app
+          gzip -k data.db
+          ls -lh data.db data.db.gz
+
+      - name: Uploader l'artefact data.db.gz
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-db
+          path: app/data.db.gz
+          retention-days: 30
+
+      - name: Créer une release nightly (sur main uniquement)
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: db-${{ github.sha }}
+          name: data.db ${{ github.sha }}
+          body: |
+            Reconstruction automatique de la base SQLite.
+            Commit : ${{ github.sha }}
+            Date : ${{ github.event.head_commit.timestamp }}
+          files: app/data.db.gz
+          prerelease: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,42 @@
+MIT License
+
+Copyright (c) 2026 Dr Jean-Étienne Podik — NutricellScience
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Données
+
+Les données utilisées par ce projet proviennent de sources publiques sous
+licences distinctes (à respecter pour toute redistribution) :
+
+- **Annuaire des professionnels de santé (CNAM/Ameli)** — Licence Ouverte 2.0
+  https://www.etalab.gouv.fr/licence-ouverte-open-licence/
+
+- **Annuaire Santé RPPS (ANS)** — Licence Ouverte 2.0
+  https://annuaire.sante.fr/
+
+- **Accessibilité Potentielle Localisée (DREES)** — Licence Ouverte 2.0
+  https://www.data.gouv.fr/datasets/laccessibilite-potentielle-localisee-apl/
+
+- **Base Adresse Nationale (BAN)** — ODbL 1.0 / Licence Ouverte selon usage
+  https://adresse.data.gouv.fr/
+
+L'usage des données reste soumis à ces licences, indépendamment du code MIT.
