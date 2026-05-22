@@ -46,9 +46,9 @@ jobs:
           node -e "
             const Database = require('better-sqlite3');
             const db = new Database('./data.db', { readonly: true });
-            const total = db.prepare('SELECT COUNT(*) AS c FROM praticiens').get().c;
-            const hr = db.prepare('SELECT COUNT(*) AS c FROM praticiens WHERE score_hors_radar >= 50').get().c;
-            const us = db.prepare('SELECT COUNT(*) AS c FROM praticiens WHERE under_supplied = 1').get().c;
+            const total = db.prepare('SELECT COUNT(*) AS c FROM practitioners').get().c;
+            const hr = db.prepare('SELECT COUNT(*) AS c FROM practitioners WHERE score_hors_radar >= 50').get().c;
+            const us = db.prepare('SELECT COUNT(*) AS c FROM practitioners WHERE under_supplied = 1').get().c;
             console.log('Total praticiens   :', total);
             console.log('Score hors-radar ≥50:', hr);
             console.log('Zone sous-dotée    :', us);
